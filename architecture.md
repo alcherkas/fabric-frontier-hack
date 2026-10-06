@@ -34,7 +34,7 @@ This section of the blueprint shows how the [use case](usecase.md) is built on t
 - **Layer 1: Consumers** – GitHub Copilot (VS Code and CLI) and other MCP clients for recall and capture, and a Copilot Studio agent as the service assistant.
 - **Layer 2: Interface** – Stateless MCP memory service in Python on Azure App Service: `recall`, `capture`, `confirm`, `dispute` ([ADR-002](docs/adrs/adr-002-mcp-service-hosting.md)).
 - **Layer 3: Safety** – PII detection in Azure Language in Foundry Tools, plus the service's own secret-pattern rules, on every write.
-- **Layer 4: AI** – Azure OpenAI in Microsoft Foundry: embeddings, and judging duplicates and contradictions.
+- **Layer 4: AI** – Azure OpenAI in Microsoft Foundry: embeddings with `text-embedding-3-large` at 1536 dimensions (proposed in [ADR-003](docs/adrs/adr-003-embedding-model.md)), and judging duplicates and contradictions.
 - **Layer 5: Data** – Cosmos DB in Microsoft Fabric: items, vectors and signals in one store. Proposed in [ADR-001](docs/adrs/adr-001-knowledge-store.md); if recall falls short, Azure AI Search is added for ranking.
 - **Layer 6: Analytics** – Power BI KPI dashboard on OneLake. It reads the copy of the item store that Cosmos DB in Fabric mirrors there automatically, and the results an evaluation harness writes after replaying the seeded dataset against the service.
 - **Layer 7: Governance** – Microsoft Entra ID for sign-in and team groups, Azure Key Vault for the App Service authentication secret, Microsoft Purview for cataloguing and labelling the Fabric data, and Azure Monitor for the audit log.
@@ -98,7 +98,8 @@ flowchart LR
 - App Service publishes the sign-in metadata (preview), so VS Code signs in with Entra ID on its own. If it doesn't work in our tenant, the service publishes it with the MCP SDK.
 - GitHub Copilot CLI can sign in to a remote MCP server with Entra ID. This isn't documented.
 - Whether VS Code and Copilot CLI let you set a tool-call timeout. If not, fail-open relies on the assistant's instructions and the service's own time cap.
-- Filtered vector search in Cosmos DB in Fabric is accurate enough. The ADR-001 recall test checks this.
+- Filtered vector search in Cosmos DB in Fabric is accurate enough. Below 1,000 vectors it scans every vector instead of using the `quantizedFlat` index, so the ADR-001 recall test checks the index only if the seed dataset is at least that large. Its size is not decided.
+- `text-embedding-3-large` is available in the Azure OpenAI region the project uses.
 - The Fabric tenant setting that lets service principals use Fabric APIs is on, so the service's managed identity can reach Cosmos DB in Fabric.
 - Where the evaluation harness runs is not decided.
 - The recall time cap is still to be tuned. A few seconds is assumed.
