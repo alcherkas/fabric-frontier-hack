@@ -3,6 +3,7 @@
 This section of the blueprint maps each capability in [usecase.md](usecase.md) to a Microsoft service.
 It is a draft. The knowledge store is still an open decision, recorded in ADR-001.
 The MCP service host is decided in [ADR-002](docs/adrs/adr-002-mcp-service-hosting.md).
+The embedding model is proposed in [ADR-003](docs/adrs/adr-003-embedding-model.md).
 
 ## Service mapping
 
@@ -10,7 +11,7 @@ The MCP service host is decided in [ADR-002](docs/adrs/adr-002-mcp-service-hosti
 |---|---|---|---|
 | Interface | Memory service: recall, capture, confirm, dispute | Azure App Service (Python) | Hosts the stateless MCP server that assistants and agents call |
 | Data | Knowledge item store and semantic search | Cosmos DB in Microsoft Fabric (fallback: plus Azure AI Search) | Stores items with their provenance, confidence, status and vectors |
-| AI | Embeddings, duplicate detection, contradiction judging | Azure OpenAI in Microsoft Foundry | Embeds items and queries, and decides whether a new item duplicates or contradicts an existing one |
+| AI | Embeddings, duplicate detection, contradiction judging | Azure OpenAI in Microsoft Foundry (`text-embedding-3-large` for embeddings) | Embeds items and queries, and decides whether a new item duplicates or contradicts an existing one |
 | Safety | Secret and personal-data filter on write | Azure Language in Foundry Tools PII detection, plus secret-pattern rules in the service | Rejects statements containing personal data, credentials or tokens before they are stored |
 | Consumers | Coding assistant integration | GitHub Copilot (VS Code and CLI) through MCP | Recalls before a task and captures after it, and keeps working when memory is down |
 | Consumers | Service assistant Q&A | Copilot Studio agent | Answers onboarding and support questions from the same MCP server, citing sources |
